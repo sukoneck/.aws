@@ -37,7 +37,6 @@ handle_file_backup() {
             mv "$item" "${BACKUP_DIR}"
         fi
     done
-    echo "✅ ${TARGET_DIR} has been backed up to ${BACKUP_DIR}."
 }
 
 handle_file_backup
@@ -45,14 +44,14 @@ handle_file_backup
 handle_installation() {
     local TEMP_DIR="awsup"
     mkdir -p "${TEMP_DIR}"
-    cd "${TEMP_DIR}"
+    pushd "${TEMP_DIR}" > /dev/null
 
     echo "🔄 Cloning the repository..."
-    git clone "${REPO_URL}"
+    git clone "${REPO_URL}" > /dev/null 2>&1
     cp -r .aws/* "${TARGET_DIR}"
     rm -rf "${TARGET_DIR}"/.git
 
-    cd ..
+    popd > /dev/null
     rm -rf "${TEMP_DIR}"
 
     echo "✅ Installation complete!"
