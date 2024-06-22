@@ -14,7 +14,7 @@ REPO_URL="https://github.com/0x416e746f6e/.aws.git"
 # Check if the config or credentials files already exist
 CONFIG_FILE="${TARGET_DIR}/config"
 CREDENTIALS_FILE="${TARGET_DIR}/credentials"
-LOGIN_FILE="${TARGET_DIR}/login.sh"
+MANAGER_FILE="${TARGET_DIR}/manager.sh"
 
 # Get the current date for the backup folder
 DATE=$(date +%Y-%m-%d_%H-%M-%S)
@@ -57,7 +57,7 @@ handle_installation() {
     echo "✅ Installation complete!"
 
     echo "🔄 Starting setup..."
-    . ${LOGIN_FILE} --setup
+    . ${MANAGER_FILE} --setup
 }
 
 handle_installation
