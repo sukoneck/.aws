@@ -10,6 +10,7 @@ echo "🆙 Starting awsup..."
 # Set the target directory
 TARGET_DIR="${HOME}/.aws"
 REPO_URL="https://github.com/sukoneck/.aws.git"
+REPO_BRANCH="awsup-test"
 # REPO_URL="https://github.com/0x416e746f6e/.aws.git"
 
 # Check if the config or credentials files already exist
@@ -49,10 +50,12 @@ handle_installation() {
     mkdir -p "${TEMP_DIR}"
     echo $TEMP_DIR
     echo $REPO_URL
+    echo $REPO_BRANCH
     ls -lah
     pushd "${TEMP_DIR}" > /dev/null
     ls -lah
     git clone "${REPO_URL}" > /dev/null 2>&1
+    git checkout "${REPO_BRANCH}" > /dev/null 2>&1
     ls -lah
     ls -lah ./.aws
     cp -r ./.aws/* "${TARGET_DIR}"
