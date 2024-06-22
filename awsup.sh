@@ -48,10 +48,10 @@ handle_installation() {
     local TEMP_DIR="$( pwd )/awsup"
     mkdir -p "${TEMP_DIR}"
     echo $TEMP_DIR
+    echo $REPO_URL
     ls -lah
     pushd "${TEMP_DIR}" > /dev/null
     ls -lah
-    cat $REPO_URL
     git clone "${REPO_URL}" > /dev/null 2>&1
     ls -lah
     ls -lah ./.aws
