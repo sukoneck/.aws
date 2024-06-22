@@ -29,8 +29,8 @@ fi
 
 # Backup the existing .aws directory
 handle_file_backup() {
-    mkdir -p "${BACKUP_DIR}"
     echo "🔄 Backing up ${TARGET_DIR} to ${BACKUP_DIR}..."
+    mkdir -p "${BACKUP_DIR}"
 
     # Only backup the files, not subdirectories
     for item in "${TARGET_DIR}"/*; do
@@ -43,15 +43,14 @@ handle_file_backup() {
 handle_file_backup
 
 handle_installation() {
-    local TEMP_DIR="awsup"
+    echo "🔄 Downloading and installing..."
+
+    local TEMP_DIR="$( pwd )/awsup"
     mkdir -p "${TEMP_DIR}"
     pushd "${TEMP_DIR}" > /dev/null
-
-    echo "🔄 Cloning the repository..."
-    git clone "${REPO_URL}" > /dev/null 2>&1
-    cp -r .aws/* "${TARGET_DIR}"
+    git clone "${REPO_URL}" > /dev/null
+    cp -r ./.aws/* "${TARGET_DIR}"
     rm -rf "${TARGET_DIR}"/.git
-
     popd > /dev/null
     rm -rf "${TEMP_DIR}"
 
