@@ -47,7 +47,7 @@ handle_installation() {
 
     local TEMP_DIR="$( pwd )/awsup"
     mkdir -p "${TEMP_DIR}"
-    cat $TEMP_DIR
+    echo $TEMP_DIR
     ls -lah
     pushd "${TEMP_DIR}" > /dev/null
     ls -lah
