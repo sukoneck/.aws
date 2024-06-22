@@ -238,7 +238,7 @@ function delete_lock() {
 
 function get_help_message() {
   local HELP_MESSAGE=<<EOF
-        CLI for aws-manager.
+        CLI for aws-cli-manager.
 
         Usage:
 
