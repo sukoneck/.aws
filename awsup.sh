@@ -34,7 +34,7 @@ handle_file_backup() {
     # Only backup the files, not subdirectories
     for item in "${TARGET_DIR}"/*; do
         if [ -f "$item" ]; then
-            mv -v "$item" "${BACKUP_DIR}"
+            mv "$item" "${BACKUP_DIR}"
         fi
     done
     echo "✅ ${TARGET_DIR} has been backed up to ${BACKUP_DIR}."
@@ -43,10 +43,17 @@ handle_file_backup() {
 handle_file_backup
 
 handle_installation() {
-    # Clone the repository
+    local TEMP_DIR="awsup"
+    mkdir -p "${TEMP_DIR}"
+    cd "${TEMP_DIR}"
+
     echo "🔄 Cloning the repository..."
-    git clone "${REPO_URL}" "${TARGET_DIR}"
-    rm -rf ~/.aws/.git
+    git clone "${REPO_URL}"
+    cp -r .aws/* "${TARGET_DIR}"
+    rm -rf "${TARGET_DIR}"/.git
+
+    cd ..
+    rm -rf "${TEMP_DIR}"
 
     echo "✅ Installation complete!"
 
