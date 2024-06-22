@@ -52,17 +52,17 @@ handle_installation() {
     echo $REPO_URL
     echo $REPO_BRANCH
     ls -lah
-    pushd "${TEMP_DIR}" > /dev/null
+    pushd "${TEMP_DIR}" #> /dev/null
     ls -lah
-    git clone "${REPO_URL}" > /dev/null 2>&1
-    git checkout "${REPO_BRANCH}" > /dev/null 2>&1
+    git clone "${REPO_URL}" #> /dev/null 2>&1
+    git checkout "${REPO_BRANCH}" #> /dev/null 2>&1
     ls -lah
     ls -lah ./.aws
     cp -r ./.aws/* "${TARGET_DIR}"
     ls -lah "${TARGET_DIR}"
     rm -rf "${TARGET_DIR}"/.git
     ls -lah "${TARGET_DIR}"
-    popd > /dev/null
+    popd #> /dev/null
     ls -lah
     rm -rf "${TEMP_DIR}"
     ls -lah
