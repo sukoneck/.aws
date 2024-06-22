@@ -26,8 +26,10 @@ if ! command -v git &> /dev/null; then
     exit 1
 fi
 
+# Backup the existing .aws directory
 handle_file_backup() {
     mkdir -p "${BACKUP_DIR}"
+    echo "🔄 Backing up ${TARGET_DIR} to ${BACKUP_DIR}..."
 
     # Only backup the files, not subdirectories
     for item in "${TARGET_DIR}"/*; do
@@ -35,17 +37,21 @@ handle_file_backup() {
             mv -v "$item" "${BACKUP_DIR}"
         fi
     done
-    echo "ℹ️ ${TARGET_DIR} has been backed up to ${BACKUP_DIR}."
+    echo "✅ ${TARGET_DIR} has been backed up to ${BACKUP_DIR}."
 }
 
-# Backup the existing .aws directory
 handle_file_backup
 
-# Clone the repository
-git clone "${REPO_URL}" "${TARGET_DIR}"
-rm -rf ~/.aws/.git
+handle_installation() {
+    # Clone the repository
+    echo "🔄 Cloning the repository..."
+    git clone "${REPO_URL}" "${TARGET_DIR}"
+    rm -rf ~/.aws/.git
 
-echo "✅ Installation complete!"
+    echo "✅ Installation complete!"
 
-echo "ℹ️ Starting setup..."
-. ${LOGIN_FILE} --setup
+    echo "🔄 Starting setup..."
+    . ${LOGIN_FILE} --setup
+}
+
+handle_installation
