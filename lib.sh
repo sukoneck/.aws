@@ -157,7 +157,6 @@ function get_profile() {
 function get_prompt_string() {
     echo -n "🔑 $1: " >&2
     read CHOICE
-    # echo >&2
     echo "${CHOICE}"
 }
 
@@ -166,7 +165,7 @@ function get_prompt_private_string() {
     echo -n "🔑 $1: " >&2
     read CHOICE
     stty echo
-    # echo >&2
+    echo >&2
     echo "${CHOICE}"
 }
 
