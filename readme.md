@@ -1,9 +1,10 @@
-# Storing AWS CLI credentials in macOS keychain
+# aws-manager
+
+Storing AWS CLI credentials in macOS keychain.
 
 ## Supported environments
 
 OS:
-- Linux
 - MacOS
 
 OTP Engines:
@@ -15,7 +16,7 @@ OTP Engines:
 
 ```bash
 # Linux
-curl -L https://raw.githubusercontent.com/0x416e746f6e/.aws/main/awsup.sh | bash
+curl -sL https://raw.githubusercontent.com/0x416e746f6e/.aws/main/awsup.sh | bash
 ```
 
 ## Manual start

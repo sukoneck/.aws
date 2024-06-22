@@ -30,7 +30,11 @@ handle_file_backup() {
     mkdir -p "${BACKUP_DIR}"
 
     # Only backup the files, not subdirectories
-    mv "${TARGET_DIR}"/* "${BACKUP_DIR}/"
+    for item in "${TARGET_DIR}"/*; do
+        if [ -f "$item" ]; then
+            mv -v "$item" "${BACKUP_DIR}"
+        fi
+    done
     echo "ℹ️ ${TARGET_DIR} has been backed up to ${BACKUP_DIR}."
 }
 
