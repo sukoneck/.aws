@@ -47,17 +47,26 @@ handle_installation() {
 
     local TEMP_DIR="$( pwd )/awsup"
     mkdir -p "${TEMP_DIR}"
+    cat $TEMP_DIR
+    ls -lah
     pushd "${TEMP_DIR}" > /dev/null
-    git clone "${REPO_URL}" > /dev/null
+    ls -lah
+    cat $REPO_URL
+    git clone "${REPO_URL}" > /dev/null 2>&1
+    ls -lah
+    ls -lah ./.aws
     cp -r ./.aws/* "${TARGET_DIR}"
+    ls -lah "${TARGET_DIR}"
     rm -rf "${TARGET_DIR}"/.git
+    ls -lah "${TARGET_DIR}"
     popd > /dev/null
+    ls -lah
     rm -rf "${TEMP_DIR}"
-
+    ls -lah
     echo "✅ Installation complete!"
 
     echo "🔄 Starting setup..."
-    . ${MANAGER_FILE} --setup
+    # . ${MANAGER_FILE} --setup
 }
 
 handle_installation
