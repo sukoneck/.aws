@@ -9,14 +9,12 @@ echo "🆙 Starting awsup..."
 
 # Set the target directory
 TARGET_DIR="${HOME}/.aws"
-REPO_URL="https://github.com/sukoneck/.aws.git"
-REPO_BRANCH="awsup-test"
-# REPO_URL="https://github.com/0x416e746f6e/.aws.git"
+REPO_URL="https://github.com/0x416e746f6e/.aws.git"
+REPO_BRANCH="main"
 
 # Check if the config or credentials files already exist
 CONFIG_FILE="${TARGET_DIR}/config"
 CREDENTIALS_FILE="${TARGET_DIR}/credentials"
-MANAGER_FILE="${TARGET_DIR}/manager.sh"
 
 # Get the current date for the backup folder
 DATE=$(date +%Y-%m-%d_%H-%M-%S)
@@ -48,28 +46,20 @@ handle_installation() {
 
     local TEMP_DIR="$( pwd )/awsup"
     mkdir -p "${TEMP_DIR}"
-    echo $TEMP_DIR
-    echo $REPO_URL
-    echo $REPO_BRANCH
-    ls -lah
-    pushd "${TEMP_DIR}" #> /dev/null
-    ls -lah
-    git clone "${REPO_URL}" #> /dev/null 2>&1
-    git checkout "${REPO_BRANCH}" #> /dev/null 2>&1
-    ls -lah
-    ls -lah ./.aws
-    cp -r ./.aws/* "${TARGET_DIR}"
-    ls -lah "${TARGET_DIR}"
-    rm -rf "${TARGET_DIR}"/.git
-    ls -lah "${TARGET_DIR}"
-    popd #> /dev/null
-    ls -lah
-    rm -rf "${TEMP_DIR}"
-    ls -lah
-    echo "✅ Installation complete!"
 
-    echo "🔄 Starting setup..."
-    # . ${MANAGER_FILE} --setup
+    pushd "${TEMP_DIR}" > /dev/null 2>&1
+    git clone "${REPO_URL}" > /dev/null 2>&1
+    cd .aws
+    git checkout "${REPO_BRANCH}" > /dev/null 2>&1
+    rm -rf .git
+    cp -r ./* "${TARGET_DIR}/"
+    sed -i '' "s|/Users/anton/|$HOME/|g" "${TARGET_DIR}/credentials"
+
+    popd > /dev/null 2>&1
+    rm -rf "${TEMP_DIR}"
+
+    echo "✅ Installation complete! To finish setup, run:"
+    echo "✨    . ~/.aws/manager.sh --setup"
 }
 
 handle_installation

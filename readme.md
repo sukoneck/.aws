@@ -7,6 +7,10 @@ Storing AWS CLI credentials in macOS keychain.
 OS:
 - MacOS
 
+Shells:
+- zsh
+- bash
+
 OTP Engines:
 - Yubikey
 - 1password
