@@ -34,8 +34,8 @@ handle_file_backup() {
 
     # Only backup the files, not subdirectories
     for item in "${TARGET_DIR}"/*; do
-        if [ -f "$item" ]; then
-            mv "$item" "${BACKUP_DIR}"
+        if [ -f "${item}" ]; then
+            mv "${TARGET_DIR}/${item}" "${BACKUP_DIR}"
         fi
     done
 }
