@@ -55,8 +55,7 @@ handle_installation() {
     git checkout "${REPO_BRANCH}" > /dev/null 2>&1
     rm -rf .git
     cp -r ./* "${TARGET_DIR}/"
-    sed "s|/Users/anton/|$HOME/|g" "${TARGET_DIR}/credentials" > "${TARGET_DIR}/credentials.tmp"
-    mv "${TARGET_DIR}/credentials.tmp" "${TARGET_DIR}/credentials"
+    sed "s|/Users/anton/|$HOME/|g" "${TARGET_DIR}/credentials" | tee "${TARGET_DIR}/credentials" > /dev/null 2>&1
     popd > /dev/null 2>&1
 
     rm -rf "${TEMP_DIR}"
