@@ -96,9 +96,8 @@ function save_1fa_token_file() {
   local AWS_HELPER_USER_ARN="$1"
   local AWS_HELPER_CREDENTIALS="$2"
 
-  echo "{\"${AWS_HELPER_USER_ARN}\": \"${AWS_HELPER_CREDENTIALS}\"}" > "${HOME}/.aws/1fa_token"
+  echo "{\"${AWS_HELPER_USER_ARN}\": ${AWS_HELPER_CREDENTIALS}}" > "${HOME}/.aws/1fa_token"
 }
-
 
 function save_2fa_token() {
   if [[ -n "${DEBUG}" ]]; then
@@ -153,7 +152,7 @@ function save_2fa_token_osxkeychain() {
 
 function save_2fa_token_file() {
   local AWS_HELPER_SESSION_TOKEN="$1"
-  echo "{\"${AWS_HELPER_MFA_DEVICE}\": \"${AWS_HELPER_SESSION_TOKEN}\"}" > "${HOME}/.aws/2fa_token"
+  echo "{\"${AWS_HELPER_MFA_DEVICE}\": ${AWS_HELPER_SESSION_TOKEN}}" > "${HOME}/.aws/2fa_token"
 }
 
 function request_2fa_token() {
