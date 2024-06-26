@@ -2,7 +2,7 @@ AWS_HELPER_MFA_DEVICE="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:mfa/${AWS_HELPER_IA
 AWS_HELPER_USER_ARN="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:user/${AWS_HELPER_IAM_USERNAME}"
 
 function get_1fa_token() {
-  get_1fa_token_"${AWS_HELPER_VAULT_ENGINE}"
+  "get_1fa_token_${AWS_HELPER_VAULT_ENGINE}"
 }
 
 function get_1fa_token_osxkeychain() {
@@ -18,7 +18,7 @@ function get_1fa_token_file() {
 }
 
 function get_2fa_token() {
-  get_2fa_token_"${AWS_HELPER_VAULT_ENGINE}"
+  "get_2fa_token_${AWS_HELPER_VAULT_ENGINE}"
 }
 
 function get_2fa_token_osxkeychain() {
@@ -38,7 +38,7 @@ function save_1fa_token() {
     echo "New AWS_HELPER_CREDENTIALS" >> "${HOME}/.aws/debug.log"
   fi
 
-  save_1fa_token_"${AWS_HELPER_VAULT_ENGINE}" "$1" "$2"
+  "save_1fa_token_${AWS_HELPER_VAULT_ENGINE}" "$1" "$2"
 }
 
 function save_1fa_token_osxkeychain() {
@@ -72,7 +72,7 @@ function save_2fa_token() {
     echo "New AWS_HELPER_SESSION_TOKEN: $1" >> "${HOME}/.aws/debug.log"
   fi
 
-  save_2fa_token_"${AWS_HELPER_VAULT_ENGINE}" "$1"
+  "save_2fa_token_${AWS_HELPER_VAULT_ENGINE}" "$1"
 }
 
 function save_2fa_token_osxkeychain() {
