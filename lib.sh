@@ -214,14 +214,6 @@ function get_prompt_bool() {
   esac
 }
 
-function get_os() {
-  case "$(uname -s)" in
-    Darwin) echo "macos" ;;
-    Linux) echo "linux" ;;
-    *) echo "unknown" ;;
-  esac
-}
-
 function set_profile_env() {
   local PROFILE="$( get_profile )"
   local KEY="$1"
@@ -241,10 +233,7 @@ function save_setup() {
   local PROMPT_AWS_HELPER_IAM_USERNAME="$( get_prompt_string "Enter your IAM username:" )"
   set_profile_env "AWS_HELPER_IAM_USERNAME" "${PROMPT_AWS_HELPER_IAM_USERNAME}"
 
-  local AWS_HELPER_OS="$( get_os )"
-  set_profile_env "AWS_HELPER_OS" "${AWS_HELPER_OS}"
-
-  if "${AWS_HELPER_OS}" = "macos"; then
+  if [[ "$OSTYPE" == "darwin"* ]]; then
     set_profile_env "AWS_HELPER_VAULT_ENGINE" "osxkeychain"
   else
     set_profile_env "AWS_HELPER_VAULT_ENGINE" "file"
