@@ -1,3 +1,6 @@
+AWS_HELPER_PROFILE="${HOME}/.profile"
+[[ -f "${AWS_HELPER_PROFILE}" ]] && source "${AWS_HELPER_PROFILE}"
+
 AWS_HELPER_MFA_DEVICE="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:mfa/${AWS_HELPER_IAM_USERNAME}"
 AWS_HELPER_USER_ARN="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:user/${AWS_HELPER_IAM_USERNAME}"
 
@@ -241,18 +244,17 @@ function get_prompt_bool() {
 }
 
 function set_profile_env() {
-  local PROFILE="${HOME}/.profile"
   local KEY="$1"
   local VALUE="$2"
 
-  if grep -q "^export ${KEY}=" "${PROFILE}"; then
+  if grep -q "^export ${KEY}=" "${AWS_HELPER_PROFILE}"; then
     if [[ "$OSTYPE" == "darwin"* ]]; then
-      sed -i '' "s/^export ${KEY}=.*/export ${KEY}=${VALUE}/" "${PROFILE}"
+      sed -i '' "s/^export ${KEY}=.*/export ${KEY}=${VALUE}/" "${AWS_HELPER_PROFILE}"
     else
-      sed -i "s/^export ${KEY}=.*/export ${KEY}=${VALUE}/" "${PROFILE}"
+      sed -i "s/^export ${KEY}=.*/export ${KEY}=${VALUE}/" "${AWS_HELPER_PROFILE}"
     fi
   else
-    echo "export ${KEY}=${VALUE}" >> "$PROFILE"
+    echo "export ${KEY}=${VALUE}" >> "$AWS_HELPER_PROFILE"
   fi
 }
 
