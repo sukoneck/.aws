@@ -38,6 +38,9 @@ else
         delete_lock
       fi
       ;;
+  --delete-lock|-d)
+      delete_lock
+      ;;
   --help|-h)
       get_help_message
       delete_lock

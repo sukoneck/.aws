@@ -167,8 +167,8 @@ function request_2fa_token() {
   elif op=$(which op); then
     PIN=$(op item get ${AWS_OP_ITEM} --otp 2>/dev/null || echo "")
     if [ -z "${PIN}" ]; then
-      echo "🔑 Enter the name or ID of your 1password item:" >&2
-      set_profile_env "AWS_OP_ITEM" "${PROMPT_AWS_OP_ITEM}"
+      local PROMPT_AWS_HELPER_OP_ITEM="$( get_prompt_string "Enter the name or ID of your 1password item:" )" >&2
+      set_profile_env "AWS_HELPER_OP_ITEM" "${PROMPT_AWS_HELPER_OP_ITEM}"
       read PIN
     fi
   else
@@ -245,16 +245,14 @@ function set_profile_env() {
   local KEY="$1"
   local VALUE="$2"
 
-  if grep -q "^${KEY}=" "${PROFILE}"; then
-
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-      sed -i '' "s/^${KEY}=.*/${KEY}=${VALUE}/" "${PROFILE}"
+  if grep -q "^export ${KEY}=" "${PROFILE}"; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      sed -i '' "s/^export ${KEY}=.*/export ${KEY}=${VALUE}/" "${PROFILE}"
+    else
+      sed -i "s/^export ${KEY}=.*/export ${KEY}=${VALUE}/" "${PROFILE}"
+    fi
   else
-      sed -i "s/^${KEY}=.*/${KEY}=${VALUE}/" "${PROFILE}"
-  fi
-
-  else
-    echo "${KEY}=${VALUE}" >> "$PROFILE"
+    echo "export ${KEY}=${VALUE}" >> "$PROFILE"
   fi
 }
 
@@ -272,7 +270,7 @@ function save_setup() {
   fi
 
   if get_prompt_bool "Do you use 1password client for 2fa?"; then
-    local PROMPT_AWS_OP_ITEM="$( get_prompt_string "Enter the name or ID of your 1password item:" )"
+    local PROMPT_AWS_HELPER_OP_ITEM="$( get_prompt_string "Enter the name or ID of your 1password item:" )"
     set_profile_env "AWS_HELPER_OP_ITEM" "${PROMPT_AWS_HELPER_OP_ITEM}"
   fi
 
