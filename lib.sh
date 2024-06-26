@@ -38,7 +38,7 @@ function save_1fa_token() {
     echo "New AWS_HELPER_CREDENTIALS" >> "${HOME}/.aws/debug.log"
   fi
 
-  save_1fa_token_"${AWS_HELPER_VAULT_ENGINE}" "${$1}" "${$2}"
+  save_1fa_token_"${AWS_HELPER_VAULT_ENGINE}" "$1" "$2"
 }
 
 function save_1fa_token_osxkeychain() {
@@ -69,7 +69,7 @@ function save_1fa_token_file() {
 
 function save_2fa_token() {
   if [[ -n "${DEBUG}" ]]; then
-    echo "New AWS_HELPER_SESSION_TOKEN: ${$1}" >> "${HOME}/.aws/debug.log"
+    echo "New AWS_HELPER_SESSION_TOKEN: $1" >> "${HOME}/.aws/debug.log"
   fi
 
   save_2fa_token_"${AWS_HELPER_VAULT_ENGINE}" "$1"
