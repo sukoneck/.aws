@@ -220,7 +220,13 @@ function set_profile_env() {
   local VALUE="$2"
 
   if grep -q "^${KEY}=" "${PROFILE}"; then
-    sed "s/^${KEY}=.*/${KEY}=${VALUE}/" "${PROFILE}" | tee "${PROFILE}" > /dev/null
+
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+      sed -i '' "s/^${KEY}=.*/${KEY}=${VALUE}/" "${PROFILE}"
+  else
+      sed -i "s/^${KEY}=.*/${KEY}=${VALUE}/" "${PROFILE}"
+  fi
+
   else
     echo "${KEY}=${VALUE}" >> "$PROFILE"
   fi

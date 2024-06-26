@@ -55,7 +55,13 @@ handle_installation() {
     git checkout "${REPO_BRANCH}" > /dev/null 2>&1
     rm -rf .git
     cp -r ./* "${TARGET_DIR}/"
-    sed "s|/Users/anton/|$HOME/|g" "${TARGET_DIR}/credentials" | tee "${TARGET_DIR}/credentials" > /dev/null 2>&1
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s|/Users/anton/|$HOME/|g" "${TARGET_DIR}/credentials"
+    else
+        sed -i "s|/Users/anton/|$HOME/|g" "${TARGET_DIR}/credentials"
+    fi
+
     popd > /dev/null 2>&1
 
     rm -rf "${TEMP_DIR}"
