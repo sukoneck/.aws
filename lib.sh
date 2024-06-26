@@ -288,6 +288,7 @@ function save_setup() {
   local AWS_HELPER_CREDENTIALS="{\"Version\":1,\"AccessKeyId\":\"${PROMPT_AWS_ACCESS_KEY_ID}\",\"SecretAccessKey\":\"${PROMPT_AWS_SECRET_ACCESS_KEY}\"}"
 
   save_1fa_token "${AWS_HELPER_USER_ARN}" "${AWS_HELPER_CREDENTIALS}"
+  save_2fa_token $( request_2fa_token )
 
   echo "✅ Setup complete! To validate, run:"
   echo "✨    aws sts get-caller-identity"
