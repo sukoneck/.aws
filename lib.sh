@@ -2,7 +2,18 @@ AWS_HELPER_MFA_DEVICE="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:mfa/${AWS_HELPER_IA
 AWS_HELPER_USER_ARN="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:user/${AWS_HELPER_IAM_USERNAME}"
 
 function get_1fa_token() {
-  "get_1fa_token_${AWS_HELPER_VAULT_ENGINE}"
+  case "${AWS_HELPER_VAULT_ENGINE}" in
+    osxkeychain)
+      get_1fa_token_osxkeychain
+      ;;
+    file)
+      get_1fa_token_file
+      ;;
+    *)
+      echo "🚫 Invalid vault engine: ${AWS_HELPER_VAULT_ENGINE}" >&2
+      exit 1
+      ;;
+  esac
 }
 
 function get_1fa_token_osxkeychain() {
@@ -18,7 +29,18 @@ function get_1fa_token_file() {
 }
 
 function get_2fa_token() {
-  "get_2fa_token_${AWS_HELPER_VAULT_ENGINE}"
+  case "${AWS_HELPER_VAULT_ENGINE}" in
+    osxkeychain)
+      get_2fa_token_osxkeychain
+      ;;
+    file)
+      get_2fa_token_file
+      ;;
+    *)
+      echo "🚫 Invalid vault engine: ${AWS_HELPER_VAULT_ENGINE}" >&2
+      exit 1
+      ;;
+  esac
 }
 
 function get_2fa_token_osxkeychain() {
@@ -38,7 +60,18 @@ function save_1fa_token() {
     echo "New AWS_HELPER_CREDENTIALS" >> "${HOME}/.aws/debug.log"
   fi
 
-  "save_1fa_token_${AWS_HELPER_VAULT_ENGINE}" "$1" "$2"
+  case "${AWS_HELPER_VAULT_ENGINE}" in
+    osxkeychain)
+      save_1fa_token_osxkeychain "$1" "$2"
+      ;;
+    file)
+      save_1fa_token_file "$1" "$2"
+      ;;
+    *)
+      echo "🚫 Invalid vault engine: ${AWS_HELPER_VAULT_ENGINE}" >&2
+      exit 1
+      ;;
+  esac
 }
 
 function save_1fa_token_osxkeychain() {
@@ -72,7 +105,18 @@ function save_2fa_token() {
     echo "New AWS_HELPER_SESSION_TOKEN: $1" >> "${HOME}/.aws/debug.log"
   fi
 
-  "save_2fa_token_${AWS_HELPER_VAULT_ENGINE}" "$1"
+  case "${AWS_HELPER_VAULT_ENGINE}" in
+    osxkeychain)
+      save_2fa_token_osxkeychain "$1"
+      ;;
+    file)
+      save_2fa_token_file "$1"
+      ;;
+    *)
+      echo "🚫 Invalid vault engine: ${AWS_HELPER_VAULT_ENGINE}" >&2
+      exit 1
+      ;;
+  esac
 }
 
 function save_2fa_token_osxkeychain() {
