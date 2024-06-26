@@ -61,7 +61,7 @@ handle_installation() {
     rm -rf "${TEMP_DIR}"
 
     echo "✅ Installation complete! To finish setup, run:"
-    echo "✨    . ~/.aws/manager.sh --setup"
+    echo "✨    . ~/.aws/helper.sh --setup"
 }
 
 handle_installation

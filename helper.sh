@@ -27,14 +27,12 @@ if [[ -z "$1" ]]; then
   echo "🚫 No argument provided."
   get_help_message
   delete_lock
-  exit 1
 else
   case "$1" in
   --custom-config|-c)
       if [[ -z "$2" ]]; then
         echo "🚫 Usage: --custom-config <url_or_path>"
         delete_lock
-        exit 1
       else
         save_custom_config "$2"
         delete_lock
@@ -55,7 +53,6 @@ else
   *)
       echo "🚫 Argument not supported: $1"
       delete_lock
-      exit 1
       ;;
   esac
 fi

@@ -1,78 +1,115 @@
-AWS_MFA_DEVICE="arn:aws:iam::${AWS_ACCOUNT_ID}:mfa/${AWS_IAM_USERNAME}"
-AWS_USER_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:user/${AWS_IAM_USERNAME}"
+AWS_HELPER_MFA_DEVICE="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:mfa/${AWS_HELPER_IAM_USERNAME}"
+AWS_HELPER_USER_ARN="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:user/${AWS_HELPER_IAM_USERNAME}"
 
 function get_1fa_token() {
+  get_1fa_token_"${AWS_HELPER_VAULT_ENGINE}"
+}
+
+function get_1fa_token_osxkeychain() {
   security find-generic-password \
-    -l "${AWS_USER_ARN}" \
-    -a "${AWS_USER_ARN}" \
-    -s "${AWS_USER_ARN}" \
+    -l "${AWS_HELPER_USER_ARN}" \
+    -a "${AWS_HELPER_USER_ARN}" \
+    -s "${AWS_HELPER_USER_ARN}" \
     -w
+}
+
+function get_1fa_token_file() {
+  cat "${HOME}/.aws/1fa_token" | jq -r ".\"${AWS_HELPER_USER_ARN}\""
 }
 
 function get_2fa_token() {
+  get_2fa_token_"${AWS_HELPER_VAULT_ENGINE}"
+}
+
+function get_2fa_token_osxkeychain() {
   security find-generic-password \
-    -l "${AWS_MFA_DEVICE}" \
-    -a "${AWS_MFA_DEVICE}" \
-    -s "${AWS_MFA_DEVICE}" \
+    -l "${AWS_HELPER_MFA_DEVICE}" \
+    -a "${AWS_HELPER_MFA_DEVICE}" \
+    -s "${AWS_HELPER_MFA_DEVICE}" \
     -w
 }
 
-function save_1fa_token() {
-  local AWS_USER_ARN="$1"
-  local AWS_CREDENTIALS="$2"
+function get_2fa_token_file() {
+  cat "${HOME}/.aws/2fa_token" | jq -r ".\"${AWS_HELPER_MFA_DEVICE}\""
+}
 
+function save_1fa_token() {
   if [[ -n "${DEBUG}" ]]; then
-    echo "New AWS_CREDENTIALS" >> "${HOME}/.aws/debug.log"
+    echo "New AWS_HELPER_CREDENTIALS" >> "${HOME}/.aws/debug.log"
   fi
 
+  save_1fa_token_"${AWS_HELPER_VAULT_ENGINE}" "${$1}" "${$2}"
+}
+
+function save_1fa_token_osxkeychain() {
+  local AWS_HELPER_USER_ARN="$1"
+  local AWS_HELPER_CREDENTIALS="$2"
+
   security delete-generic-password \
-      -l "${AWS_USER_ARN}" \
-      -a "${AWS_USER_ARN}" \
-      -s "${AWS_USER_ARN}" \
+      -l "${AWS_HELPER_USER_ARN}" \
+      -a "${AWS_HELPER_USER_ARN}" \
+      -s "${AWS_HELPER_USER_ARN}" \
     > /dev/null 2>&1 || true
 
   security add-generic-password \
-      -l "${AWS_USER_ARN}" \
-      -a "${AWS_USER_ARN}" \
-      -s "${AWS_USER_ARN}" \
-      -w "${AWS_CREDENTIALS}" \
+      -l "${AWS_HELPER_USER_ARN}" \
+      -a "${AWS_HELPER_USER_ARN}" \
+      -s "${AWS_HELPER_USER_ARN}" \
+      -w "${AWS_HELPER_CREDENTIALS}" \
     > /dev/null 2>&1 || true
 }
 
-function save_2fa_token() {
-  local AWS_SESSION_TOKEN="$1"
+function save_1fa_token_file() {
+  local AWS_HELPER_USER_ARN="$1"
+  local AWS_HELPER_CREDENTIALS="$2"
 
+  echo "{\"${AWS_HELPER_USER_ARN}\": \"${AWS_HELPER_CREDENTIALS}\"}" > "${HOME}/.aws/1fa_token"
+}
+
+
+function save_2fa_token() {
   if [[ -n "${DEBUG}" ]]; then
-    echo "New AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}" >> "${HOME}/.aws/debug.log"
+    echo "New AWS_HELPER_SESSION_TOKEN: ${$1}" >> "${HOME}/.aws/debug.log"
   fi
+
+  save_2fa_token_"${AWS_HELPER_VAULT_ENGINE}" "$1"
+}
+
+function save_2fa_token_osxkeychain() {
+  local AWS_HELPER_SESSION_TOKEN="$1"
 
   if [[ -z "${DEBUG}" ]]; then
     security delete-generic-password \
-        -l "${AWS_MFA_DEVICE}" \
-        -a "${AWS_MFA_DEVICE}" \
-        -s "${AWS_MFA_DEVICE}" \
+        -l "${AWS_HELPER_MFA_DEVICE}" \
+        -a "${AWS_HELPER_MFA_DEVICE}" \
+        -s "${AWS_HELPER_MFA_DEVICE}" \
       > /dev/null 2>&1 || true
 
     security add-generic-password \
-        -l "${AWS_MFA_DEVICE}" \
-        -a "${AWS_MFA_DEVICE}" \
-        -s "${AWS_MFA_DEVICE}" \
-        -w "${AWS_SESSION_TOKEN}" \
+        -l "${AWS_HELPER_MFA_DEVICE}" \
+        -a "${AWS_HELPER_MFA_DEVICE}" \
+        -s "${AWS_HELPER_MFA_DEVICE}" \
+        -w "${AWS_HELPER_SESSION_TOKEN}" \
       > /dev/null 2>&1 || true
   else
     security delete-generic-password \
-        -l "${AWS_MFA_DEVICE}" \
-        -a "${AWS_MFA_DEVICE}" \
-        -s "${AWS_MFA_DEVICE}" \
+        -l "${AWS_HELPER_MFA_DEVICE}" \
+        -a "${AWS_HELPER_MFA_DEVICE}" \
+        -s "${AWS_HELPER_MFA_DEVICE}" \
       >> "${HOME}/.aws/debug.log" 2>&1 || true
 
     security add-generic-password \
-        -l "${AWS_MFA_DEVICE}" \
-        -a "${AWS_MFA_DEVICE}" \
-        -s "${AWS_MFA_DEVICE}" \
-        -w "${AWS_SESSION_TOKEN}" \
+        -l "${AWS_HELPER_MFA_DEVICE}" \
+        -a "${AWS_HELPER_MFA_DEVICE}" \
+        -s "${AWS_HELPER_MFA_DEVICE}" \
+        -w "${AWS_HELPER_SESSION_TOKEN}" \
       >> "${HOME}/.aws/debug.log"
     fi
+}
+
+function save_2fa_token_file() {
+  local AWS_HELPER_SESSION_TOKEN="$1"
+  echo "{\"${AWS_HELPER_MFA_DEVICE}\": \"${AWS_HELPER_SESSION_TOKEN}\"}" > "${HOME}/.aws/2fa_token"
 }
 
 function request_2fa_token() {
@@ -83,7 +120,7 @@ function request_2fa_token() {
       echo "🔑 Please insert your yubikey and hit <ENTER>..." >&2
       read
     fi
-    PIN=$( $ykman oath accounts code --single ${AWS_MFA_DEVICE} )
+    PIN=$( $ykman oath accounts code --single ${AWS_HELPER_MFA_DEVICE} )
   elif op=$(which op); then
     PIN=$(op item get ${AWS_OP_ITEM} --otp 2>/dev/null || echo "")
     if [ -z "${PIN}" ]; then
@@ -92,16 +129,16 @@ function request_2fa_token() {
       read PIN
     fi
   else
-    printf "🔑 Enter one-time password for \`${AWS_MFA_DEVICE}\`: " >&2
+    printf "🔑 Enter one-time password for \`${AWS_HELPER_MFA_DEVICE}\`: " >&2
     read PIN
   fi
 
   echo "🔄 Requesting session token from AWS API..." >&2
 
-  if ! AWS_SESSION_TOKEN=$( aws \
+  if ! AWS_HELPER_SESSION_TOKEN=$( aws \
         --profile 1fa \
       sts get-session-token \
-        --serial-number ${AWS_MFA_DEVICE} \
+        --serial-number ${AWS_HELPER_MFA_DEVICE} \
         --duration-seconds 3600 \
         --token-code ${PIN} \
     | jq -r -c ".Credentials + { \"Version\": 1 }"
@@ -112,7 +149,7 @@ function request_2fa_token() {
 
   echo "✅ Done." >&2
 
-  printf "${AWS_SESSION_TOKEN}"
+  printf "${AWS_HELPER_SESSION_TOKEN}"
 }
 
 function save_custom_config() {
@@ -134,48 +171,55 @@ function save_custom_config() {
     echo "🚫 Invalid config source: ${AWS_CONFIG_SOURCE}" >&2
     exit 1
   fi
-  echo "🔄 Saved config from: ${AWS_CONFIG_SOURCE} to ${AWS_CONFIG_DEST}" >&2
 }
 
 function get_profile() {
   local PROFILE
   case "${SHELL}" in
   */zsh)
-      PROFILE="${ZDOTDIR-"$HOME"}/.zshrc"
-      ;;
+    PROFILE="${ZDOTDIR-"$HOME"}/.zshrc"
+    ;;
   */bash)
-      PROFILE="${HOME}/.bashrc"
-      ;;
+    PROFILE="${HOME}/.bashrc"
+    ;;
   *)
-      echo "🚫 Shell not found." >&2
-      exit 1
-      ;;
+    echo "🚫 Shell not found." >&2
+    exit 1
+    ;;
   esac
   echo "${PROFILE}"
 }
 
 function get_prompt_string() {
-    echo -n "🔑 $1 " >&2
-    read CHOICE
-    echo "${CHOICE}"
+  echo -n "🔑 $1 " >&2
+  read CHOICE
+  echo "${CHOICE}"
 }
 
 function get_prompt_private_string() {
-    stty -echo
-    echo -n "🔑 $1 " >&2
-    read CHOICE
-    stty echo
-    echo >&2
-    echo "${CHOICE}"
+  stty -echo
+  echo -n "🔑 $1 " >&2
+  read CHOICE
+  stty echo
+  echo >&2
+  echo "${CHOICE}"
 }
 
 function get_prompt_bool() {
-    echo -n "🔑 $1 [y/N]: " >&2
-    read CHOICE
-    case "${CHOICE}" in
-      y|Y ) return 0;;
-      * ) return 1;;
-    esac
+  echo -n "🔑 $1 [y/N]: " >&2
+  read CHOICE
+  case "${CHOICE}" in
+    y|Y ) return 0;;
+    * ) return 1;;
+  esac
+}
+
+function get_os() {
+  case "$(uname -s)" in
+    Darwin) echo "macos" ;;
+    Linux) echo "linux" ;;
+    *) echo "unknown" ;;
+  esac
 }
 
 function set_profile_env() {
@@ -191,29 +235,38 @@ function set_profile_env() {
 }
 
 function save_setup() {
-  local PROMPT_AWS_ACCOUNT_ID="$( get_prompt_string "Enter your AWS account ID:" )"
-  set_profile_env "AWS_ACCOUNT_ID" "${PROMPT_AWS_ACCOUNT_ID}"
+  local PROMPT_AWS_HELPER_ACCOUNT_ID="$( get_prompt_string "Enter your AWS account ID:" )"
+  set_profile_env "AWS_HELPER_ACCOUNT_ID" "${PROMPT_AWS_HELPER_ACCOUNT_ID}"
 
-  local PROMPT_AWS_IAM_USERNAME="$( get_prompt_string "Enter your IAM username:" )"
-  set_profile_env "AWS_IAM_USERNAME" "${PROMPT_AWS_IAM_USERNAME}"
+  local PROMPT_AWS_HELPER_IAM_USERNAME="$( get_prompt_string "Enter your IAM username:" )"
+  set_profile_env "AWS_HELPER_IAM_USERNAME" "${PROMPT_AWS_HELPER_IAM_USERNAME}"
+
+  local AWS_HELPER_OS="$( get_os )"
+  set_profile_env "AWS_HELPER_OS" "${AWS_HELPER_OS}"
+
+  if "${AWS_HELPER_OS}" = "macos"; then
+    set_profile_env "AWS_HELPER_VAULT_ENGINE" "osxkeychain"
+  else
+    set_profile_env "AWS_HELPER_VAULT_ENGINE" "file"
+  fi
 
   if get_prompt_bool "Do you use 1password client for 2fa?"; then
-      local PROMPT_AWS_OP_ITEM="$( get_prompt_string "Enter the name or ID of your 1password item:" )"
-      set_profile_env "AWS_OP_ITEM" "${PROMPT_AWS_OP_ITEM}"
+    local PROMPT_AWS_OP_ITEM="$( get_prompt_string "Enter the name or ID of your 1password item:" )"
+    set_profile_env "AWS_HELPER_OP_ITEM" "${PROMPT_AWS_HELPER_OP_ITEM}"
   fi
 
   if get_prompt_bool "Do you want to add a custom aws config file?"; then
-      local PROMPT_CUSTOM_CONFIG="$( get_prompt_string "Enter the path or URL to the custom config file:" )"
-      save_custom_config "${PROMPT_CUSTOM_CONFIG}"
+    local PROMPT_CUSTOM_CONFIG="$( get_prompt_string "Enter the path or URL to the custom config file:" )"
+    save_custom_config "${PROMPT_CUSTOM_CONFIG}"
   fi
 
   local PROMPT_AWS_ACCESS_KEY_ID="$( get_prompt_private_string "Enter your AWS access key ID:" )"
   local PROMPT_AWS_SECRET_ACCESS_KEY="$( get_prompt_private_string "Enter your AWS secret access key:" )"
 
-  local AWS_USER_ARN="arn:aws:iam::${PROMPT_AWS_ACCOUNT_ID}:user/${PROMPT_AWS_IAM_USERNAME}"
-  local AWS_CREDENTIALS="{\"Version\":1,\"AccessKeyId\":\"${PROMPT_AWS_ACCESS_KEY_ID}\",\"SecretAccessKey\":\"${PROMPT_AWS_SECRET_ACCESS_KEY}\"}"
+  local AWS_HELPER_USER_ARN="arn:aws:iam::${PROMPT_AWS_HELPER_ACCOUNT_ID}:user/${PROMPT_AWS_HELPER_IAM_USERNAME}"
+  local AWS_HELPER_CREDENTIALS="{\"Version\":1,\"AccessKeyId\":\"${PROMPT_AWS_ACCESS_KEY_ID}\",\"SecretAccessKey\":\"${PROMPT_AWS_SECRET_ACCESS_KEY}\"}"
 
-  save_1fa_token "${AWS_USER_ARN}" "${AWS_CREDENTIALS}"
+  save_1fa_token "${AWS_HELPER_USER_ARN}" "${AWS_HELPER_CREDENTIALS}"
 
   echo "✅ Setup complete! To validate, run:"
   echo "✨    aws sts get-caller-identity"
@@ -237,11 +290,11 @@ function delete_lock() {
 
 function get_help_message() {
   local HELP_MESSAGE=<<EOF
-        CLI for aws-cli-manager.
+        CLI for aws-cli-helper.
 
         Usage:
 
-            ~/.aws/manager.sh [options]
+            ~/.aws/helper.sh [options]
 
         Options:
 

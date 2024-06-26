@@ -37,7 +37,7 @@ if [ "$NOW" \> "$EXPIRATION" ]; then
     echo "Logging in..." >> ${HOME}/.aws/debug.log
   fi
 
-  $pwd/manager.sh --login
+  $pwd/helper.sh --login
   AWS_SESSION_TOKEN=$( get_2fa_token )
 fi
 
