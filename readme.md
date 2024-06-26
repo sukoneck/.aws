@@ -42,3 +42,9 @@ data like roles and account IDs to be managed privately.
 ```bash
 ~/.aws/helper.sh --login
 ```
+
+### Delete login lock
+
+```bash
+~/.aws/helper.sh --delete-lock
+```
