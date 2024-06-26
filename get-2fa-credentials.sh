@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e -o pipefail
 
@@ -32,7 +32,7 @@ printf '{ "ts": "%s", "expiration": "%s", "grandgrandparent": { "pid": %s, "comm
     "${PID}" "${ARG}" \
   >> ${HOME}/.aws/get-2fa-credentials.log
 
-if [ "$NOW" \> "$EXPIRATION" ]; then
+if [[ "$NOW" > "$EXPIRATION" ]]; then
   if [[ -n "${DEBUG}" ]]; then
     echo "Logging in..." >> ${HOME}/.aws/debug.log
   fi

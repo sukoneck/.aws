@@ -216,23 +216,6 @@ function save_custom_config() {
   fi
 }
 
-function get_profile() {
-  local PROFILE
-  case "${SHELL}" in
-  */zsh)
-    PROFILE="${ZDOTDIR-"$HOME"}/.zshrc"
-    ;;
-  */bash)
-    PROFILE="${HOME}/.bashrc"
-    ;;
-  *)
-    echo "🚫 Shell not found." >&2
-    exit 1
-    ;;
-  esac
-  echo "${PROFILE}"
-}
-
 function get_prompt_string() {
   echo -n "🔑 $1 " >&2
   read CHOICE
@@ -258,7 +241,7 @@ function get_prompt_bool() {
 }
 
 function set_profile_env() {
-  local PROFILE="$( get_profile )"
+  local PROFILE="${HOME}/.profile"
   local KEY="$1"
   local VALUE="$2"
 
