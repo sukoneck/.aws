@@ -166,12 +166,14 @@ function save_2fa_token_file() {
 }
 
 function get_2fa_otp_manual() {
-    printf "🔑 Enter one-time password for \`${AWS_HELPER_MFA_DEVICE_ARN}\`: " >&2
+    echo "🔑 Enter one-time password for \`${AWS_HELPER_MFA_DEVICE_ARN}\`: " >&2
     read PIN
     echo "${PIN}"
 }
 
 function request_2fa_token() {
+  local PIN=""
+
   echo "🔄 Logging into AWS..." >&2
 
   # Check if Yubikey or 1password are available
@@ -183,12 +185,12 @@ function request_2fa_token() {
     PIN=$( $ykman oath accounts code --single ${AWS_HELPER_MFA_DEVICE_ARN} )
   elif op=$(which op); then
     if [ -n "${AWS_HELPER_OP_ITEM}" ]; then
-      PIN=$( $op item get ${AWS_HELPER_OP_ITEM} --otp 2>/dev/null )
+      PIN=$( $op item get ${AWS_HELPER_OP_ITEM} --otp )
     fi
   fi
 
   # Verify that PIN is exactly 6 numbers or fall back to manual input
-  while [[ ! $PIN =~ ^[0-9]{6}$ ]]; do
+  while [[ ! "${PIN}" =~ ^[0-9]{6}$ ]]; do
     PIN=$( get_2fa_otp_manual )
   done
 
@@ -197,9 +199,9 @@ function request_2fa_token() {
   if ! AWS_HELPER_SESSION_TOKEN=$( aws \
         --profile 1fa \
       sts get-session-token \
-        --serial-number ${AWS_HELPER_MFA_DEVICE_ARN} \
+        --serial-number "${AWS_HELPER_MFA_DEVICE_ARN}" \
         --duration-seconds 3600 \
-        --token-code ${PIN} \
+        --token-code "${PIN}" \
     | jq -r -c ".Credentials + { \"Version\": 1 }"
   ); then
     echo "🚫 Failed to retrieve AWS session token" >&2
