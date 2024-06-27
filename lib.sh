@@ -1,6 +1,17 @@
 AWS_HELPER_PROFILE="${HOME}/.profile"
-[[ -f "${AWS_HELPER_PROFILE}" ]] && source "${AWS_HELPER_PROFILE}"
 
+function source_profile() {
+  if [[ -f "${AWS_HELPER_PROFILE}" ]]; then
+    source "${AWS_HELPER_PROFILE}"
+  else
+    echo "🚫 Profile not found: ${AWS_HELPER_PROFILE}" >&2
+    exit 1
+  fi
+}
+
+source_profile
+
+AWS_HELPER_MFA_DEVICE_ARN="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:mfa/${AWS_HELPER_MFA_DEVICE_NAME}"
 AWS_HELPER_USER_ARN="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:user/${AWS_HELPER_IAM_USERNAME}"
 
 function get_1fa_token() {
@@ -47,14 +58,14 @@ function get_2fa_token() {
 
 function get_2fa_token_osxkeychain() {
   security find-generic-password \
-    -l "${AWS_HELPER_MFA_DEVICE}" \
-    -a "${AWS_HELPER_MFA_DEVICE}" \
-    -s "${AWS_HELPER_MFA_DEVICE}" \
+    -l "${AWS_HELPER_MFA_DEVICE_ARN}" \
+    -a "${AWS_HELPER_MFA_DEVICE_ARN}" \
+    -s "${AWS_HELPER_MFA_DEVICE_ARN}" \
     -w
 }
 
 function get_2fa_token_file() {
-  cat "${HOME}/.aws/2fa_token" | jq -r ".\"${AWS_HELPER_MFA_DEVICE}\""
+  cat "${HOME}/.aws/2fa_token" | jq -r ".\"${AWS_HELPER_MFA_DEVICE_ARN}\""
 }
 
 function save_1fa_token() {
@@ -125,28 +136,28 @@ function save_2fa_token_osxkeychain() {
 
   if [[ -z "${DEBUG}" ]]; then
     security delete-generic-password \
-        -l "${AWS_HELPER_MFA_DEVICE}" \
-        -a "${AWS_HELPER_MFA_DEVICE}" \
-        -s "${AWS_HELPER_MFA_DEVICE}" \
+        -l "${AWS_HELPER_MFA_DEVICE_ARN}" \
+        -a "${AWS_HELPER_MFA_DEVICE_ARN}" \
+        -s "${AWS_HELPER_MFA_DEVICE_ARN}" \
       > /dev/null 2>&1 || true
 
     security add-generic-password \
-        -l "${AWS_HELPER_MFA_DEVICE}" \
-        -a "${AWS_HELPER_MFA_DEVICE}" \
-        -s "${AWS_HELPER_MFA_DEVICE}" \
+        -l "${AWS_HELPER_MFA_DEVICE_ARN}" \
+        -a "${AWS_HELPER_MFA_DEVICE_ARN}" \
+        -s "${AWS_HELPER_MFA_DEVICE_ARN}" \
         -w "${AWS_HELPER_SESSION_TOKEN}" \
       > /dev/null 2>&1 || true
   else
     security delete-generic-password \
-        -l "${AWS_HELPER_MFA_DEVICE}" \
-        -a "${AWS_HELPER_MFA_DEVICE}" \
-        -s "${AWS_HELPER_MFA_DEVICE}" \
+        -l "${AWS_HELPER_MFA_DEVICE_ARN}" \
+        -a "${AWS_HELPER_MFA_DEVICE_ARN}" \
+        -s "${AWS_HELPER_MFA_DEVICE_ARN}" \
       >> "${HOME}/.aws/debug.log" 2>&1 || true
 
     security add-generic-password \
-        -l "${AWS_HELPER_MFA_DEVICE}" \
-        -a "${AWS_HELPER_MFA_DEVICE}" \
-        -s "${AWS_HELPER_MFA_DEVICE}" \
+        -l "${AWS_HELPER_MFA_DEVICE_ARN}" \
+        -a "${AWS_HELPER_MFA_DEVICE_ARN}" \
+        -s "${AWS_HELPER_MFA_DEVICE_ARN}" \
         -w "${AWS_HELPER_SESSION_TOKEN}" \
       >> "${HOME}/.aws/debug.log"
     fi
@@ -154,36 +165,43 @@ function save_2fa_token_osxkeychain() {
 
 function save_2fa_token_file() {
   local AWS_HELPER_SESSION_TOKEN="$1"
-  echo "{\"${AWS_HELPER_MFA_DEVICE}\": ${AWS_HELPER_SESSION_TOKEN}}" > "${HOME}/.aws/2fa_token"
+  echo "{\"${AWS_HELPER_MFA_DEVICE_ARN}\": ${AWS_HELPER_SESSION_TOKEN}}" > "${HOME}/.aws/2fa_token"
+}
+
+function get_2fa_otp_manual() {
+    printf "🔑 Enter one-time password for \`${AWS_HELPER_MFA_DEVICE_ARN}\`: " >&2
+    read PIN
+    echo "${PIN}"
 }
 
 function request_2fa_token() {
   echo "🔄 Logging into AWS..." >&2
 
+  # Check if Yubikey or 1password are available
   if ykman=$( which ykman ); then
-    if [ -z "$( ykman list )" ]; then
+    if [ -z "$( $ykman list )" ]; then
       echo "🔑 Please insert your yubikey and hit <ENTER>..." >&2
       read
     fi
-    PIN=$( $ykman oath accounts code --single ${AWS_HELPER_MFA_DEVICE} )
+    PIN=$( $ykman oath accounts code --single ${AWS_HELPER_MFA_DEVICE_ARN} )
   elif op=$(which op); then
-    PIN=$(op item get ${AWS_OP_ITEM} --otp 2>/dev/null || echo "")
-    if [ -z "${PIN}" ]; then
-      local PROMPT_AWS_HELPER_OP_ITEM="$( get_prompt_string "Enter the name or ID of your 1password item:" )" >&2
-      set_profile_env "AWS_HELPER_OP_ITEM" "${PROMPT_AWS_HELPER_OP_ITEM}"
-      read PIN
+    if [ -n "${AWS_HELPER_OP_ITEM}" ]; then
+      PIN=$( $op item get ${AWS_HELPER_OP_ITEM} --otp 2>/dev/null )
     fi
-  else
-    printf "🔑 Enter one-time password for \`${AWS_HELPER_MFA_DEVICE}\`: " >&2
-    read PIN
   fi
+
+  # Verify that PIN is exactly 6 numbers or fall back to manual input
+  while [[ ! $PIN =~ ^[0-9]{6}$ ]]; do
+    echo "❌ Invalid PIN: Please enter a 6-digit number."
+    PIN=$( get_2fa_otp_manual )
+  done
 
   echo "🔄 Requesting session token from AWS API..." >&2
 
   if ! AWS_HELPER_SESSION_TOKEN=$( aws \
         --profile 1fa \
       sts get-session-token \
-        --serial-number ${AWS_HELPER_MFA_DEVICE} \
+        --serial-number ${AWS_HELPER_MFA_DEVICE_ARN} \
         --duration-seconds 3600 \
         --token-code ${PIN} \
     | jq -r -c ".Credentials + { \"Version\": 1 }"
@@ -275,8 +293,8 @@ function save_setup() {
     set_profile_env "AWS_HELPER_OP_ITEM" "${PROMPT_AWS_HELPER_OP_ITEM}"
   fi
 
-  local PROMPT_AWS_HELPER_MFA_DEVICE="$( get_prompt_string "Enter the ARN of your MFA device:" )"
-  set_profile_env "AWS_HELPER_MFA_DEVICE" "${PROMPT_AWS_HELPER_MFA_DEVICE}"
+  local PROMPT_AWS_HELPER_MFA_DEVICE_NAME="$( get_prompt_string "Enter the name of your AWS MFA device:" )"
+  set_profile_env "AWS_HELPER_MFA_DEVICE_NAME" "${PROMPT_AWS_HELPER_MFA_DEVICE_NAME}"
 
   if get_prompt_bool "Do you want to add a custom aws config file?"; then
     local PROMPT_CUSTOM_CONFIG="$( get_prompt_string "Enter the path or URL to the custom config file:" )"
@@ -286,10 +304,11 @@ function save_setup() {
   local PROMPT_AWS_ACCESS_KEY_ID="$( get_prompt_private_string "Enter your AWS access key ID:" )"
   local PROMPT_AWS_SECRET_ACCESS_KEY="$( get_prompt_private_string "Enter your AWS secret access key:" )"
 
-  local AWS_HELPER_USER_ARN="arn:aws:iam::${PROMPT_AWS_HELPER_ACCOUNT_ID}:user/${PROMPT_AWS_HELPER_IAM_USERNAME}"
-  local AWS_HELPER_CREDENTIALS="{\"Version\":1,\"AccessKeyId\":\"${PROMPT_AWS_ACCESS_KEY_ID}\",\"SecretAccessKey\":\"${PROMPT_AWS_SECRET_ACCESS_KEY}\"}"
+  local SETUP_AWS_HELPER_USER_ARN="arn:aws:iam::${PROMPT_AWS_HELPER_ACCOUNT_ID}:user/${PROMPT_AWS_HELPER_IAM_USERNAME}"
+  local SETUP_AWS_HELPER_CREDENTIALS="{\"Version\":1,\"AccessKeyId\":\"${PROMPT_AWS_ACCESS_KEY_ID}\",\"SecretAccessKey\":\"${PROMPT_AWS_SECRET_ACCESS_KEY}\"}"
 
-  save_1fa_token "${AWS_HELPER_USER_ARN}" "${AWS_HELPER_CREDENTIALS}"
+  source_profile
+  save_1fa_token "${SETUP_AWS_HELPER_USER_ARN}" "${SETUP_AWS_HELPER_CREDENTIALS}"
   save_2fa_token $( request_2fa_token )
 
   echo "✅ Setup complete! To validate, run:"
