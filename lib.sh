@@ -166,8 +166,7 @@ function save_2fa_token_file() {
 }
 
 function get_2fa_otp_manual() {
-    echo "🔑 Enter one-time password for \`${AWS_HELPER_MFA_DEVICE_ARN}\`: " >&2
-    read PIN
+    local PIN="$( get_prompt_private_string "Enter one-time password for \`${AWS_HELPER_MFA_DEVICE_ARN}\`:" )"
     echo "${PIN}"
 }
 
