@@ -4,10 +4,10 @@ AWS CLI Helper makes configuration easy and authentication very easy.
 
 ## Supported environments
 
-OS: `macOS`, `Ubuntu`
-Shells: `zsh`, `bash`
-OTP Engines: `Yubikey`, `1password`, `Manual`
-Vault Engines: `macOS Keychain`, `file`
+- OS: `macOS`, `Ubuntu`
+- Shell: `zsh`, `bash`
+- OTP engine: `Yubikey`, `1password`, `Manual`
+- Vault engine: `macOS Keychain`, `file`
 
 ## Quick start
 
@@ -41,4 +41,10 @@ data like roles and account IDs to be managed privately.
 
 ```bash
 ~/.aws/helper.sh --login
+```
+
+### Delete login lock
+
+```bash
+~/.aws/helper.sh --delete-lock
 ```
