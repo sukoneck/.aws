@@ -11,9 +11,6 @@ function source_profile() {
 
 source_profile
 
-AWS_HELPER_MFA_DEVICE_ARN="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:mfa/${AWS_HELPER_MFA_DEVICE_NAME}"
-AWS_HELPER_USER_ARN="arn:aws:iam::${AWS_HELPER_ACCOUNT_ID}:user/${AWS_HELPER_IAM_USERNAME}"
-
 function get_1fa_token() {
   case "${AWS_HELPER_VAULT_ENGINE}" in
     osxkeychain)
@@ -192,7 +189,6 @@ function request_2fa_token() {
 
   # Verify that PIN is exactly 6 numbers or fall back to manual input
   while [[ ! $PIN =~ ^[0-9]{6}$ ]]; do
-    echo "❌ Invalid PIN: Please enter a 6-digit number."
     PIN=$( get_2fa_otp_manual )
   done
 
@@ -276,11 +272,14 @@ function set_profile_env() {
 }
 
 function save_setup() {
-  local PROMPT_AWS_HELPER_ACCOUNT_ID="$( get_prompt_string "Enter your AWS account ID:" )"
-  set_profile_env "AWS_HELPER_ACCOUNT_ID" "${PROMPT_AWS_HELPER_ACCOUNT_ID}"
+  local SETUP_AWS_HELPER_ACCOUNT_ID="$( get_prompt_string "Enter your AWS account ID:" )"
+  local SETUP_AWS_HELPER_IAM_USERNAME="$( get_prompt_string "Enter your IAM username:" )"
+  local SETUP_AWS_HELPER_USER_ARN="arn:aws:iam::${SETUP_AWS_HELPER_ACCOUNT_ID}:user/${SETUP_AWS_HELPER_IAM_USERNAME}"
+  set_profile_env "AWS_HELPER_USER_ARN" "${SETUP_AWS_HELPER_USER_ARN}"
 
-  local PROMPT_AWS_HELPER_IAM_USERNAME="$( get_prompt_string "Enter your IAM username:" )"
-  set_profile_env "AWS_HELPER_IAM_USERNAME" "${PROMPT_AWS_HELPER_IAM_USERNAME}"
+  local SETUP_AWS_HELPER_MFA_DEVICE_NAME="$( get_prompt_string "Enter the name of your AWS MFA device:" )"
+  local SETUP_AWS_HELPER_MFA_DEVICE_ARN="arn:aws:iam::${SETUP_AWS_HELPER_ACCOUNT_ID}:mfa/${SETUP_AWS_HELPER_MFA_DEVICE_NAME}"
+  set_profile_env "AWS_HELPER_MFA_DEVICE_ARN" "${SETUP_AWS_HELPER_MFA_DEVICE_ARN}"
 
   if [[ "$OSTYPE" == "darwin"* ]]; then
     set_profile_env "AWS_HELPER_VAULT_ENGINE" "osxkeychain"
@@ -289,23 +288,18 @@ function save_setup() {
   fi
 
   if get_prompt_bool "Do you use 1password client for 2fa?"; then
-    local PROMPT_AWS_HELPER_OP_ITEM="$( get_prompt_string "Enter the name or ID of your 1password item:" )"
-    set_profile_env "AWS_HELPER_OP_ITEM" "${PROMPT_AWS_HELPER_OP_ITEM}"
+    local SETUP_AWS_HELPER_OP_ITEM="$( get_prompt_string "Enter the name or ID of your 1password item:" )"
+    set_profile_env "AWS_HELPER_OP_ITEM" "${SETUP_AWS_HELPER_OP_ITEM}"
   fi
-
-  local PROMPT_AWS_HELPER_MFA_DEVICE_NAME="$( get_prompt_string "Enter the name of your AWS MFA device:" )"
-  set_profile_env "AWS_HELPER_MFA_DEVICE_NAME" "${PROMPT_AWS_HELPER_MFA_DEVICE_NAME}"
 
   if get_prompt_bool "Do you want to add a custom aws config file?"; then
-    local PROMPT_CUSTOM_CONFIG="$( get_prompt_string "Enter the path or URL to the custom config file:" )"
-    save_custom_config "${PROMPT_CUSTOM_CONFIG}"
+    local SETUP_CUSTOM_CONFIG="$( get_prompt_string "Enter the path or URL to the custom config file:" )"
+    save_custom_config "${SETUP_CUSTOM_CONFIG}"
   fi
 
-  local PROMPT_AWS_ACCESS_KEY_ID="$( get_prompt_private_string "Enter your AWS access key ID:" )"
-  local PROMPT_AWS_SECRET_ACCESS_KEY="$( get_prompt_private_string "Enter your AWS secret access key:" )"
-
-  local SETUP_AWS_HELPER_USER_ARN="arn:aws:iam::${PROMPT_AWS_HELPER_ACCOUNT_ID}:user/${PROMPT_AWS_HELPER_IAM_USERNAME}"
-  local SETUP_AWS_HELPER_CREDENTIALS="{\"Version\":1,\"AccessKeyId\":\"${PROMPT_AWS_ACCESS_KEY_ID}\",\"SecretAccessKey\":\"${PROMPT_AWS_SECRET_ACCESS_KEY}\"}"
+  local SETUP_AWS_ACCESS_KEY_ID="$( get_prompt_private_string "Enter your AWS access key ID:" )"
+  local SETUP_AWS_SECRET_ACCESS_KEY="$( get_prompt_private_string "Enter your AWS secret access key:" )"
+  local SETUP_AWS_HELPER_CREDENTIALS="{\"Version\":1,\"AccessKeyId\":\"${SETUP_AWS_ACCESS_KEY_ID}\",\"SecretAccessKey\":\"${SETUP_AWS_SECRET_ACCESS_KEY}\"}"
 
   source_profile
   save_1fa_token "${SETUP_AWS_HELPER_USER_ARN}" "${SETUP_AWS_HELPER_CREDENTIALS}"
