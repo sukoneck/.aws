@@ -249,7 +249,7 @@ function get_prompt_private_string() {
     local prompt="$1"
 
     stty -echo
-    printf "%s " "$prompt" >/dev/tty
+    printf "%s " "🔑 $prompt" >/dev/tty
     read -r CHOICE </dev/tty
     stty echo
     printf "\n" >/dev/tty
