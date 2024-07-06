@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 #
-# https://github.com/0x416e746f6e/.aws
-#
+#   https://github.com/0x416e746f6e/.aws
 #
 
 set -eo pipefail
@@ -13,10 +12,6 @@ REPO_URL="https://github.com/sukoneck/.aws.git"
 REPO_BRANCH="awsup-test"
 # REPO_URL="https://github.com/0x416e746f6e/.aws.git"
 # REPO_BRANCH="main"
-
-# Check if the config or credentials files already exist
-CONFIG_FILE="${TARGET_DIR}/config"
-CREDENTIALS_FILE="${TARGET_DIR}/credentials"
 
 # Get the current date for the directory names
 DATE=$(date +%Y-%m-%d_%H-%M-%S)
